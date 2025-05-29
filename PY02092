@@ -1,0 +1,46 @@
+from sys import stdin
+from math import isclose
+
+def cross(o, a, b):
+    # Tích có hướng OA × OB
+    return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+def area(hull):
+    s = 0
+    n = len(hull)
+    for i in range(n):
+        x1, y1 = hull[i]
+        x2, y2 = hull[(i + 1) % n]
+        s += (x1 * y2 - x2 * y1)
+    return abs(s) / 2
+
+T = int(stdin.readline())
+for _ in range(T):
+    n = int(stdin.readline())
+    points = [tuple(map(int, stdin.readline().split())) for _ in range(n)]
+    if n < 3:
+        print("0.000")
+        continue
+
+    points = sorted(set(points))  # loại trùng điểm
+    if len(points) == 1:
+        print("0.000")
+        continue
+
+    # Lower hull
+    lower = []
+    for p in points:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+
+    # Upper hull
+    upper = []
+    for p in reversed(points):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+
+    # Ghép 2 phần (loại trùng đầu-cuối)
+    hull = lower[:-1] + upper[:-1]
+    print(f"{area(hull):.3f}")

@@ -1,0 +1,43 @@
+from itertools import permutations, combinations
+
+T = int(input())
+for _ in range(T):
+    a = list(map(int, input().split()))
+    total = sum(a)
+    if total % 3:
+        print(0)
+        continue
+    s = total // 3
+    # Tạo V chứa các bộ (k,j,i) với 1 <= k < j < i <= 11 sao cho a[i]+a[j]+a[k]+a[0]==s
+    V = [(k, j, i) for i in range(1, 12)
+                  for j in range(1, i)
+                  for k in range(1, j)
+                  if a[i] + a[j] + a[k] + a[0] == s]
+    # Cache các hoán vị của từng bộ trong V
+    perm_cache = {v: list(permutations(v)) for v in V}
+    c_perm_cache = {}
+    ans = 0
+    # Duyệt cặp (A, B) không giao nhau
+    for A, B in combinations(V, 2):
+        if set(A) & set(B):
+            continue
+        # C là các chỉ số còn lại (từ 1 đến 11)
+        C = tuple(sorted(set(range(1, 12)) - set(A) - set(B)))
+        if C not in c_perm_cache:
+            c_perm_cache[C] = list(permutations(C))
+        for pa in perm_cache[A]:
+            for pb in perm_cache[B]:
+                for pc in c_perm_cache[C]:
+                    # Check theo mẫu 1
+                    if (a[pc[0]] + a[pa[0]] + a[pb[0]] + a[pc[1]] == s and
+                        a[pc[0]] + a[pa[1]] + a[pc[2]] + a[pc[4]] == s and
+                        a[pc[1]] + a[pb[1]] + a[pc[3]] + a[pc[4]] == s and
+                        a[pa[2]] + a[pc[2]] + a[pc[3]] + a[pb[2]] == s):
+                        ans += 1
+                    # Check theo mẫu 2
+                    if (a[pa[0]] + a[pb[1]] + a[pc[1]] + a[pc[4]] == s and
+                        a[pa[2]] + a[pc[0]] + a[pc[2]] + a[pc[4]] == s and
+                        a[pb[0]] + a[pa[1]] + a[pc[0]] + a[pc[3]] == s and
+                        a[pb[2]] + a[pc[1]] + a[pc[2]] + a[pc[3]] == s):
+                        ans += 1
+    print(ans)
